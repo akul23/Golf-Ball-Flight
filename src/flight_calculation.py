@@ -130,7 +130,7 @@ def analize_flight(flight_data, n):
     flight_data -- x, y, z velocity and position values
     n -- time of flight evaluation, int
     """
-
+    #TODO 3D interpolated function
     flight_x_z = sci.interpolate.interp1d(
         flight_data[:, 3], flight_data[:, 5]
     )  # Flight x z function
@@ -139,6 +139,7 @@ def analize_flight(flight_data, n):
         flight_data[:, 3], flight_data[:, 4]
     )  # Flight x y function
 
+    #TODO optimize root search, newton method
     z_0 = sci.optimize.bisect(flight_x_z, 1, flight_data[:, 3][-100])  # X of touchdown
 
     curve = flight_x_y(z_0)  # Curve amplitude
