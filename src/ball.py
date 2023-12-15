@@ -1,9 +1,10 @@
-# Imports
+# Module import
 import numpy as np
 import pandas as pd
 import scipy as sci
 import os
 
+# Script imports
 from . import UI
 
 ball_properties = {
@@ -13,7 +14,12 @@ ball_properties = {
 
 
 def get_club_data(club):
-    
+    """
+    Returns vector in form [x_spin, y_spin, z_spin, abs_velocity, launch angle]
+
+    Keyword arguments:
+    club -- club name, " " replaced with "_", str
+    """
     club_data = np.array(  # Opens file and read the desired columns
         pd.read_csv(
             os.getcwd() + "\Data\clubs.csv",
@@ -48,7 +54,9 @@ def c_d_re_interpolation(ball_type="generic"):
     ball_type -- select which ball data to return (default "Calloway"), str
     """
     data = read_ball_data(ball_type)  # Calls for ball data
-    re_data = data[:, 0]  # Preparing data
+    
+    # Preparing data
+    re_data = data[:, 0]  
     c_d_data = data[:, 1]
 
     # Interpolation
@@ -61,10 +69,10 @@ def c_d_re_interpolation(ball_type="generic"):
 
 def prepare_ball_initial_velocity_vector():
     """
-    Returns initial_velocity vector of ball given the launch angle
+    Returns initial_velocity vector of ball given the launch angle, assuming no sideway (y) velocity
     """
-    if UI.user_interface_club_ball(get_value=True)[0]:
-        data = get_club_data(UI.user_interface_club_ball(get_value=True)[1])[3:]
+    if UI.user_interface_club_ball(get_value=True)[0]: # Check for use of preset
+        data = get_club_data(UI.user_interface_club_ball(get_value=True)[1])[3:] # [abs_velocity, launch angle], from club data
         return np.round(
                 np.array(
                     [
@@ -76,7 +84,7 @@ def prepare_ball_initial_velocity_vector():
                 2,
             )
     else:
-        data = UI.user_interface_club_ball(get_value=True)[3:]
+        data = UI.user_interface_club_ball(get_value=True)[3:] # [abs_velocity, launch angle], from custom value user interface
         return np.round(
             np.array(
                 [
