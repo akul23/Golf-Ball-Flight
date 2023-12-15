@@ -1,13 +1,18 @@
-from . import UI
+# Module imports
 import numpy as np
 
+# Script imports
+from . import UI
+
+# Define global constants
 Suther = 120  # Sutherland's constant
 u_0 = 0.01724  # Reference viscosity
 T_0 = 273.15  # Referenčna temperature
+R = 287  # Specific gas constant for air
 
 
 def calculate_viscosity():
-    """Calculates viscosity for UI values"""
+    """Calculates viscosity for custum UI values"""
     data = UI.user_interface_environment(get_value=True)  # Calls UI values
     temp = data[2] + T_0  # Extracts temperature value and converts to Kelvin
     viscosity = (  # Sutherlands formula, inaccurate at low pressures
@@ -21,11 +26,13 @@ def calculate_density():
     data = UI.user_interface_environment(get_value=True)  # Calls UI values
     temp = data[2] + T_0  # Extracts temperature value and converts to Kelvin
     pressure = data[3] * 100000  # Extracts pressure value and converts to Pa
-    R = 287  # Specific gas constant for air
 
     return pressure / (R * temp)  # Returns density by the ideal gas law
 
 def prepare_wind_vector():
+    """
+    Returns vector in form [x_wind_velocity, y_wind_velocity]
+    """
     a = UI.user_interface_environment(get_value=True)[:2] # Calls UI values
     return np.round([a[0] * np.cos(np.radians(a[1])), a[0] * np.sin(np.radians(a[1])), 0], 2)
 
