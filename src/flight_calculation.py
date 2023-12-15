@@ -1,8 +1,10 @@
-# Imports
-from . import ball, environment, UI
+# Module imports
 import numpy as np
 import sympy as sym
 import scipy as sci
+
+# Script imports
+from . import ball, environment, UI
 
 
 def define_constants():
@@ -27,9 +29,9 @@ def define_constants():
     d = ball.ball_properties.get("diameter")  # Ball diameter
     wind = environment.prepare_wind_vector()  # Wind vector
     m_e = magnus_equation()  # Defines numerical magnus function
-    if UI.user_interface_club_ball(get_value=True)[0]:
-        print(ball.get_club_data(UI.user_interface_club_ball(get_value=True)[1])[:3])
-        w = ball.get_club_data(UI.user_interface_club_ball(get_value=True)[1])[:3]
+    
+    if UI.user_interface_club_ball(get_value=True)[0]: # Check for use of preset
+        w = ball.get_club_data(UI.user_interface_club_ball(get_value=True)[1])[:3] # Spin rate in rad/s
     else:
         w = UI.user_interface_club_ball(get_value=True)[5:]  # Spin rate in rad/s
 
@@ -38,15 +40,18 @@ def magnus_equation():
     """
     Prepares the numerial function for magnus force calculation
     """
-    rho_s, r_s, r_1_s = sym.symbols("rho, r r_1", positive=True)
+    # Define symbols
+    rho_s, r_s, r_1_s = sym.symbols("rho, r r_1", positive=True) 
     w_s = sym.Matrix(sym.MatrixSymbol("w", 3, 1))
     v = sym.Matrix(sym.MatrixSymbol("v", 3, 1))
+    # Equations
     A_1 = sym.pi * r_1_s**2
     A_k = sym.pi * r_s**2 - A_1
     r_1 = sym.solve(sym.Eq(A_1, A_k), r_1_s, positive=True)
     F = 2 * rho * r_1[0] ** 2 * r_s * sym.pi * w_s.cross(v)
+    # Insert flight constants
     F = F.subs({w_s[0]: w[0], w_s[1]: w[1], w_s[2]: w[2], rho_s: rho, r_s: d / 2})
-    return sym.lambdify(v, F, "numpy")
+    return sym.lambdify(v, F, "numpy") # returns numerical function for specific flight, taking velocity as a variable
 
 
 def calculate_reynolds(velocity):
@@ -69,7 +74,7 @@ def calculate_drag_force(velocity, c_d_function):
     """
     Re = calculate_reynolds(velocity)  # Caluclates reynolds number
     C_d = np.round(c_d_function(Re), 2)  # Gets corresponding drag coefficient
-    i = np.sign(velocity)  # sign mask to reverse drag force when falling
+    i = np.sign(velocity)  # Sign mask to reverse drag force when falling
 
     return np.round(-0.5 * C_d * rho * A * velocity**2 * i, 2)
 
@@ -78,7 +83,7 @@ def calculate_wind_force():
     """
     Calculates force wind applys to ball
     """
-    mask = np.sign(wind)
+    mask = np.sign(wind) # Sign mask, sign gets lost due to squaring
 
     return np.round(mask * 0.5 * rho * wind**2 * A, 2)
 
@@ -103,14 +108,14 @@ def calculate_dynamics(v, t, c_d_function, x):
     c_d_function -- drag coefficient function, func
     x -- dummy, odeit glitch?
     """
-    v = v[:3]
+    v = v[:3] # Extract velocity slice
 
     # Calculate forces
     F_w = calculate_wind_force()
     F_d = calculate_drag_force(v, c_d_function)
     F_m = calculate_magnus_force(v)
 
-    # Prepare to return first and second order results
+    # Prepare to return first and second order results in form [ v_x, v_y, v_z, x, y, z]
     out = np.zeros(6)
     out[:3] = (F_w + F_d + F_m) / ball.ball_properties.get("mass") + gravity
     out[3:] = v
@@ -119,7 +124,7 @@ def calculate_dynamics(v, t, c_d_function, x):
 
 def analize_flight(flight_data, n):
     """
-    analizes flight and returns flight details
+    analizes flight and returns flight details in form [x_distance, max_height, flight_time, curve distance]
 
     Keyword arguments:
     flight_data -- x, y, z velocity and position values
@@ -161,10 +166,10 @@ def calculate_trajectory(c_d_function, t_points=np.linspace(0, 6, 1000)):
     c_d_function -- drag coefficient function, func
     t_points -- time points (default np.linspace(0, 8, 1000))
     """
-    define_constants()
+    define_constants() # Prepare constants for specific flight
     v_0 = np.zeros(6)
     v_0[:3] = ball.prepare_ball_initial_velocity_vector()
     v_t = sci.integrate.odeint(
         calculate_dynamics, v_0, t_points, args=(c_d_function, 1)
-    )
+    ) # Solve system of differential equations
     return v_t
