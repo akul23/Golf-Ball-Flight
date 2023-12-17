@@ -28,12 +28,15 @@ def define_constants():
     gravity = np.array([0, 0, -9.81])  # Gravity vector
     d = ball.ball_properties.get("diameter")  # Ball diameter
     wind = environment.prepare_wind_vector()  # Wind vector
-    m_e = magnus_equation()  # Defines numerical magnus function
     
     if UI.user_interface_club_ball(get_value=True)[0]: # Check for use of preset
         w = ball.get_club_data(UI.user_interface_club_ball(get_value=True)[1])[:3] # Spin rate in rad/s
     else:
         w = UI.user_interface_club_ball(get_value=True)[5:]  # Spin rate in rad/s
+    
+    m_e = magnus_equation()  # Defines numerical magnus function
+    
+    
 
 
 def magnus_equation():
@@ -98,15 +101,14 @@ def calculate_magnus_force(velocity):
     return np.round(np.ravel(m_e(velocity[0], velocity[1], velocity[2])), 2)
 
 
-def calculate_dynamics(v, t, c_d_function, x):
+def calculate_dynamics(t, v, c_d_function):
     """
     Calculate ball flight dynamics, returns [:3] velocity at each time point, [3:] location at each time point
 
     Keyword arguments:
-    v -- veelocity at given time, list.shape(3,1)
+    v -- velocity at given time, list.shape(3,1)
     t -- time points, list.shape(0,n)
     c_d_function -- drag coefficient function, func
-    x -- dummy, odeit glitch?
     """
     v = v[:3] # Extract velocity slice
 
@@ -159,18 +161,21 @@ def analize_flight(flight_data, n):
     return np.round(np.array([z_0, z_max, f_time, curve]), 2)
 
 
-def calculate_trajectory(c_d_function, t_points=np.linspace(0, 6, 1000)):
+def calculate_trajectory(c_d_function, n=8, res=100):
     """
     Calculate ball flight trajectory
 
     Keyword arguments:
     c_d_function -- drag coefficient function, func
-    t_points -- time points (default np.linspace(0, 8, 1000))
+    n -- time interval for which to solve, int
+    res -- time points per second, int
     """
     define_constants() # Prepare constants for specific flight
     v_0 = np.zeros(6)
     v_0[:3] = ball.prepare_ball_initial_velocity_vector()
-    v_t = sci.integrate.odeint(
-        calculate_dynamics, v_0, t_points, args=(c_d_function, 1)
-    ) # Solve system of differential equations
-    return v_t
+    t_points = np.linspace(0, n, 8 * res)
+    
+    v_t = sci.integrate.solve_ivp(calculate_dynamics, (0, n), v_0, t_eval=t_points, args=(c_d_function,))
+    
+    return v_t.y
+
