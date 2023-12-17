@@ -2,6 +2,7 @@
 import numpy as np
 import sympy as sym
 import scipy as sci
+import matplotlib.pyplot as plt
 
 # Script imports
 from . import ball, environment, UI
@@ -105,7 +106,8 @@ def calculate_magnus_force(velocity):
     Keyword arguments:
     velocity -- velocity vector at which the ball is travelling, list.shape(3,1)
     """
-    return np.round(np.ravel(m_e(velocity[0], velocity[1], velocity[2])), 2)
+    slip_factor=1
+    return np.round(np.ravel(m_e(velocity[0], velocity[1], velocity[2]) * slip_factor), 2)
 
 
 def calculate_dynamics(t, v):
@@ -180,7 +182,7 @@ def analize_flight(flight_data, n):
     apex = np.max(flight_data[5])
     flight_path_length = path_length(flight_data[:3], n, int(np.ceil(flight_time)))
 
-    print(x_distance, y_distance, apex, flight_path_length)
+    #print(x_distance, y_distance, apex, flight_path_length)
 
     # TODO optimize root search, newton method
     # z_0 = sci.optimize.bisect(flight_x_z, 1, flight_data[3][-1])  # X of touchdown
@@ -202,12 +204,13 @@ def analize_flight(flight_data, n):
     return t_z
 
 
-def calculate_trajectory(n=13, res=100):
+def calculate_trajectory(n=13, res=100, plot_graph=False):
     """Calculate ball flight trajectory
 
     Args:
         n (int, optional):time interval for which to solve. Defaults to 13.
         res (int, optional): time points per second. Defaults to 100.
+        plot_graph (bool, optional): plot position graph insted of return values. Defaults to False.
 
     Returns:
         list: velocity_x, velocity_y, velocity_z, position_x, position_y, position_z
@@ -219,4 +222,10 @@ def calculate_trajectory(n=13, res=100):
 
     v_t = sci.integrate.solve_ivp(calculate_dynamics, (0, n), v_0, t_eval=t_points)
 
-    return v_t.y
+    if plot_graph:
+        plt.plot(v_t.y[3], v_t.y[5])
+        plt.grid()
+        plt.xlim(0, 300)
+        plt.ylim(0,300)
+    else:
+        return v_t.y

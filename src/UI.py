@@ -1,4 +1,5 @@
 from ipywidgets import Checkbox, VBox, Dropdown, FloatSlider, Layout, IntSlider
+from . import flight_calculation
 
 width = "400px"  # Slider width
 description_width = "200px"  # Label width
@@ -132,7 +133,18 @@ def user_interface_club_ball(get_value=False):
                 spin_y_slider,
                 spin_z_slider,
             ]
+    """
+    def update_graph(x):
+        flight_calculation.calculate_trajectory(plot_graph=True)
 
+    club_dropdown.observe(update_graph)
+    ball_dropdown.observe(update_graph)
+    club_speed_slider.observe(update_graph)
+    launch_angle_slider.observe(update_graph)
+    spin_x_slider.observe(update_graph)
+    spin_y_slider.observe(update_graph)
+    spin_z_slider.observe(update_graph)
+    """
     toggle.observe(
         custom_preset, names="value"
     )  # Calls custom_preset(toggle.value) when value changes
