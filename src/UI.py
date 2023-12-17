@@ -49,9 +49,9 @@ pressure_slider = FloatSlider(
 
 #############/ENVIRONMENT WIDGETS##############
 #############CLUB BALL WIDGETS##############
-club_dropdown = Dropdown(options=["6_iron", "2", "3"])
+club_dropdown = Dropdown(options=["driver", "3_wood", "5_wood", "3_iron", "4_iron", "5_iron", "6_iron", "7_iron", "8_iron", "9_iron", "PW"])
 
-ball_dropdown = Dropdown(options=["Titleist", "Callaway", "TaylorMade", "generic"])
+ball_dropdown = Dropdown(options=["Titleist", "Calloway", "TaylorMade"])
 
 club_speed_slider = FloatSlider(
     value=72,
@@ -125,6 +125,7 @@ def user_interface_club_ball(get_value=False):
             preset.children = [club_dropdown, ball_dropdown]  # Preset inputs
         else:
             preset.children = [  # Custom inputs
+                ball_dropdown,
                 club_speed_slider,
                 launch_angle_slider,
                 spin_x_slider,

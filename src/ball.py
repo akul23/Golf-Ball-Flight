@@ -23,7 +23,7 @@ def get_club_data(club):
     club_data = np.array(  # Opens file and read the desired columns
         pd.read_csv(
             os.getcwd() + "\Data\clubs.csv",
-            usecols=["spin_" + club, "velocity_" + club],
+            usecols=[ "velocity_" + club, "spin_" + club]
         )
     )
     

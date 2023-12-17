@@ -19,6 +19,7 @@ def define_constants():
     global w
     global wind
     global m_e
+    global c_d_function
 
     A = (
         ball.ball_properties.get("diameter") / 2
@@ -30,10 +31,12 @@ def define_constants():
     wind = environment.prepare_wind_vector()  # Wind vector
     
     if UI.user_interface_club_ball(get_value=True)[0]: # Check for use of preset
-        w = ball.get_club_data(UI.user_interface_club_ball(get_value=True)[1])[:3] # Spin rate in rad/s
+        w = -ball.get_club_data(UI.user_interface_club_ball(get_value=True)[1])[:3] # Spin rate in rad/s
     else:
         w = UI.user_interface_club_ball(get_value=True)[5:]  # Spin rate in rad/s
-    
+
+    c_d_function = ball.c_d_re_interpolation(UI.user_interface_club_ball(get_value=True)[2])
+
     m_e = magnus_equation()  # Defines numerical magnus function
     
     
@@ -67,7 +70,7 @@ def calculate_reynolds(velocity):
     return np.round(rho * np.abs(velocity) * d / mu)
 
 
-def calculate_drag_force(velocity, c_d_function):
+def calculate_drag_force(velocity):
     """
     Calculates drag force of the ball at given velocity with the given drag coefficient function
 
@@ -101,7 +104,7 @@ def calculate_magnus_force(velocity):
     return np.round(np.ravel(m_e(velocity[0], velocity[1], velocity[2])), 2)
 
 
-def calculate_dynamics(t, v, c_d_function):
+def calculate_dynamics(t, v):
     """
     Calculate ball flight dynamics, returns [:3] velocity at each time point, [3:] location at each time point
 
@@ -114,7 +117,7 @@ def calculate_dynamics(t, v, c_d_function):
 
     # Calculate forces
     F_w = calculate_wind_force()
-    F_d = calculate_drag_force(v, c_d_function)
+    F_d = calculate_drag_force(v)
     F_m = calculate_magnus_force(v)
 
     # Prepare to return first and second order results in form [ v_x, v_y, v_z, x, y, z]
@@ -122,6 +125,17 @@ def calculate_dynamics(t, v, c_d_function):
     out[:3] = (F_w + F_d + F_m) / ball.ball_properties.get("mass") + gravity
     out[3:] = v
     return out
+
+
+def create_coord_functions(data, n):
+    t_points = len(data[0])
+    t_int = np.linspace(0, n, t_points)
+
+    t_x = sci.interpolate.interp1d(t_int, data[3])
+    t_y = sci.interpolate.interp1d(t_int, data[4])
+    t_z = sci.interpolate.interp1d(t_int, data[5])
+
+    return t_x, t_y, t_z
 
 
 def analize_flight(flight_data, n):
@@ -132,36 +146,32 @@ def analize_flight(flight_data, n):
     flight_data -- x, y, z velocity and position values
     n -- time of flight evaluation, int
     """
-    #TODO 3D interpolated function
-    flight_x_z = sci.interpolate.interp1d(
-        flight_data[:, 3], flight_data[:, 5]
-    )  # Flight x z function
 
-    flight_x_y = sci.interpolate.interp1d(
-        flight_data[:, 3], flight_data[:, 4]
-    )  # Flight x y function
+    t_x, t_y, t_z = create_coord_functions(flight_data, n)
+
+    z_0 = sci.optimize.newton(t_z, 10)
 
     #TODO optimize root search, newton method
-    z_0 = sci.optimize.bisect(flight_x_z, 1, flight_data[:, 3][-100])  # X of touchdown
+    #z_0 = sci.optimize.bisect(flight_x_z, 1, flight_data[3][-1])  # X of touchdown
 
-    curve = flight_x_y(z_0)  # Curve amplitude
+    #curve = flight_x_y(z_0)  # Curve amplitude
 
-    z_max = sci.ndimage.maximum(flight_data[:, 5])  # Maximum of flight
+    #z_max = sci.ndimage.maximum(flight_data[5])  # Maximum of flight
 
     # Flight time
-    length_s = np.shape(flight_data[:, 3])[0] / n  # Datapoints per second
-    closest_value = min(
-        flight_data[:, 3], key=lambda x: abs(z_0 - x)
-    )  # Find the closest x value in array to touchdown
-    closest_value_index = np.where(
-        closest_value == flight_data[:, 3]
-    )  # Find the index of the closest value
-    f_time = closest_value_index[0][0] / length_s  # Time till touchdown aka flight time
+    #length_s = np.shape(flight_data[3])[0] / n  # Datapoints per second
+    #closest_value = min(
+    #    flight_data[3], key=lambda x: abs(z_0 - x)
+    #)  # Find the closest x value in array to touchdown
+    #closest_value_index = np.where(
+    #    closest_value == flight_data[3]
+    #)  # Find the index of the closest value
+    #f_time = closest_value_index[0][0] / length_s  # Time till touchdown aka flight time
 
-    return np.round(np.array([z_0, z_max, f_time, curve]), 2)
+    return t_z, z_0
 
 
-def calculate_trajectory(c_d_function, n=8, res=100):
+def calculate_trajectory(n=8, res=100):
     """
     Calculate ball flight trajectory
 
@@ -175,7 +185,7 @@ def calculate_trajectory(c_d_function, n=8, res=100):
     v_0[:3] = ball.prepare_ball_initial_velocity_vector()
     t_points = np.linspace(0, n, 8 * res)
     
-    v_t = sci.integrate.solve_ivp(calculate_dynamics, (0, n), v_0, t_eval=t_points, args=(c_d_function,))
+    v_t = sci.integrate.solve_ivp(calculate_dynamics, (0, n), v_0, t_eval=t_points)
     
     return v_t.y
 
