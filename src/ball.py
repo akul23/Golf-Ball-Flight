@@ -71,8 +71,8 @@ def prepare_ball_initial_velocity_vector():
     """
     Returns initial_velocity vector of ball given the launch angle, assuming no sideway (y) velocity
     """
-    if UI.user_interface_club_ball(get_value=True)[0]: # Check for use of preset
-        data = get_club_data(UI.user_interface_club_ball(get_value=True)[1])[3:] # [abs_velocity, launch angle], from club data
+    if UI.user_interface(get_value=True)[0]: # Check for use of preset
+        data = get_club_data(UI.user_interface(get_value=True)[1])[3:5] # [abs_velocity, launch angle], from club data
         return np.round(
                 np.array(
                     [
@@ -84,7 +84,7 @@ def prepare_ball_initial_velocity_vector():
                 2,
             )
     else:
-        data = UI.user_interface_club_ball(get_value=True)[3:] # [abs_velocity, launch angle], from custom value user interface
+        data = UI.user_interface(get_value=True)[3:5] # [abs_velocity, launch angle], from custom value user interface
         return np.round(
             np.array(
                 [

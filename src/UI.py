@@ -1,10 +1,20 @@
-from ipywidgets import Checkbox, VBox, Dropdown, FloatSlider, Layout, IntSlider
+from ipywidgets import (
+    Checkbox,
+    VBox,
+    Dropdown,
+    FloatSlider,
+    Layout,
+    IntSlider,
+    interactive_output,
+    HBox,
+)
+from IPython.display import display
 from . import flight_calculation
 
 width = "400px"  # Slider width
 description_width = "200px"  # Label width
 
-#############ENVIRONMENT WIDGETS##############
+# WIDGETS
 wind_slider = IntSlider(
     value=5,
     min=0,
@@ -48,9 +58,21 @@ pressure_slider = FloatSlider(
     layout=Layout(width=width),
 )
 
-#############/ENVIRONMENT WIDGETS##############
-#############CLUB BALL WIDGETS##############
-club_dropdown = Dropdown(options=["driver", "3_wood", "5_wood", "3_iron", "4_iron", "5_iron", "6_iron", "7_iron", "8_iron", "9_iron", "PW"])
+club_dropdown = Dropdown(
+    options=[
+        "driver",
+        "3_wood",
+        "5_wood",
+        "3_iron",
+        "4_iron",
+        "5_iron",
+        "6_iron",
+        "7_iron",
+        "8_iron",
+        "9_iron",
+        "PW",
+    ]
+)
 
 ball_dropdown = Dropdown(options=["Titleist", "Calloway", "TaylorMade"])
 
@@ -105,51 +127,35 @@ spin_z_slider = IntSlider(
     layout=Layout(width=width),
 )
 toggle = Checkbox(
-        value=True,
-        description="Uporabi Pre-set parametre"
-    )  # Checkbox for preset hide/show
-#############/CLUB BALL WIDGETS##############
+    value=True, description="Uporabi Pre-set parametre"
+)  # Checkbox for preset hide/show
+# \WIDGETS
 
 
-def user_interface_club_ball(get_value=False):
+def user_interface(get_value=False):
     """
     User interface for club/ball data
 
     Keyword arguments:
     get_data -- return data or display UI (default False)
     """
-    preset = VBox(children=[club_dropdown, ball_dropdown])  # VBox for the preset option
 
-    def custom_preset(x):
-        """Adjusts VBox to preset/custom inputs"""
-        if x.get("new"):
-            preset.children = [club_dropdown, ball_dropdown]  # Preset inputs
-        else:
-            preset.children = [  # Custom inputs
-                ball_dropdown,
-                club_speed_slider,
-                launch_angle_slider,
-                spin_x_slider,
-                spin_y_slider,
-                spin_z_slider,
-            ]
-    """
-    def update_graph(x):
-        flight_calculation.calculate_trajectory(plot_graph=True)
-
-    club_dropdown.observe(update_graph)
-    ball_dropdown.observe(update_graph)
-    club_speed_slider.observe(update_graph)
-    launch_angle_slider.observe(update_graph)
-    spin_x_slider.observe(update_graph)
-    spin_y_slider.observe(update_graph)
-    spin_z_slider.observe(update_graph)
-    """
-    toggle.observe(
-        custom_preset, names="value"
-    )  # Calls custom_preset(toggle.value) when value changes
+    # Calls custom_preset(toggle.value) when value changes
 
     # Only returns values of the selected menu (preset/custom), first element is for identifying which menu the function returns
+
+    preset = VBox(
+        children=[
+            toggle,
+            club_dropdown,
+            ball_dropdown,
+            temparature_slider,
+            pressure_slider,
+            wind_slider,
+            wind_direction_slider,
+        ]
+    )  # VBox for the preset option
+
     if get_value:
         return [
             toggle.value,
@@ -160,26 +166,94 @@ def user_interface_club_ball(get_value=False):
             spin_x_slider.value,
             spin_y_slider.value,
             spin_z_slider.value,
-        ]
-    # displays VBox and preset/custom checkbox
-    else:
-        display(toggle)
-        display(preset)
-
-
-def user_interface_environment(get_value=False):
-    """
-    User interface for environmental data
-
-    Keyword arguments:
-    get_value -- return data or display UI (default False), bool
-    """
-    if get_value:
-        return [
             wind_slider.value,
             wind_direction_slider.value,
             temparature_slider.value,
             pressure_slider.value,
         ]
+    # displays VBox and preset/custom checkbox
+
     else:
-        display(temparature_slider, pressure_slider, wind_slider, wind_direction_slider)
+        return (
+            toggle,
+            club_dropdown,
+            ball_dropdown,
+            club_speed_slider,
+            launch_angle_slider,
+            spin_x_slider,
+            spin_y_slider,
+            spin_z_slider,
+            temparature_slider,
+            pressure_slider,
+            wind_slider,
+            wind_direction_slider,
+        )
+
+
+def live_plot():
+  
+    sliders = VBox(
+        [
+            toggle,
+            club_dropdown,
+            ball_dropdown,
+            temparature_slider,
+            pressure_slider,
+            wind_slider,
+            wind_direction_slider,
+        ]
+    )
+
+    def update_graph(**args):
+        flight_calculation.calculate_trajectory(plot_graph=True)
+
+    def custom_preset(x):
+        """Adjusts VBox to preset/custom inputs"""
+        if x.get("new"):
+            sliders.children = [
+                toggle,
+                club_dropdown,
+                ball_dropdown,
+                temparature_slider,
+                pressure_slider,
+                wind_slider,
+                wind_direction_slider,
+            ]  # Preset inputs
+        else:
+            sliders.children = [  # Custom inputs
+                toggle,
+                ball_dropdown,
+                club_speed_slider,
+                launch_angle_slider,
+                spin_x_slider,
+                spin_y_slider,
+                spin_z_slider,
+                temparature_slider,
+                pressure_slider,
+                wind_slider,
+                wind_direction_slider,
+            ]
+
+    toggle.observe(custom_preset, names="value")
+
+    graph_output = interactive_output(
+        update_graph,
+        {
+            "toggle_value": toggle,
+            "club": club_dropdown,
+            "ball": ball_dropdown,
+            "speed": club_speed_slider,
+            "angle": launch_angle_slider,
+            "spin_x": spin_x_slider,
+            "spin_y": spin_y_slider,
+            "spin_z": spin_z_slider,
+            "wind_speed": wind_slider,
+            "wind_direction": wind_direction_slider,
+            "temperature": temparature_slider,
+            "pressure": pressure_slider,
+        },
+    )
+
+    inputs = VBox([sliders])
+    x_z_plot = VBox([graph_output])
+    display(HBox([inputs, x_z_plot]))

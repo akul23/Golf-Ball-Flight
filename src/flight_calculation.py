@@ -31,15 +31,15 @@ def define_constants():
     d = ball.ball_properties.get("diameter")  # Ball diameter
     wind = environment.prepare_wind_vector()  # Wind vector
 
-    if UI.user_interface_club_ball(get_value=True)[0]:  # Check for use of preset
-        w = -ball.get_club_data(UI.user_interface_club_ball(get_value=True)[1])[
+    if UI.user_interface(get_value=True)[0]:  # Check for use of preset
+        w = -ball.get_club_data(UI.user_interface(get_value=True)[1])[
             :3
         ]  # Spin rate in rad/s
     else:
-        w = UI.user_interface_club_ball(get_value=True)[5:]  # Spin rate in rad/s
+        w = UI.user_interface(get_value=True)[5:8]  # Spin rate in rad/s
 
     c_d_function = ball.c_d_re_interpolation(
-        UI.user_interface_club_ball(get_value=True)[2]
+        UI.user_interface(get_value=True)[2]
     )
 
     m_e = magnus_equation()  # Defines numerical magnus function
@@ -108,6 +108,7 @@ def calculate_magnus_force(velocity):
     """
     slip_factor=1
     return np.round(np.ravel(m_e(velocity[0], velocity[1], velocity[2]) * slip_factor), 2)
+
 
 
 def calculate_dynamics(t, v):
@@ -182,7 +183,7 @@ def analize_flight(flight_data, n):
     apex = np.round(np.max(flight_data[5]), 2)
     flight_path_length = np.round(path_length(flight_data[:3], n, int(np.ceil(flight_time))), 2)
 
-    return x_distance, y_distance, apex, flight_path_length
+    return [x_distance, y_distance, apex, flight_path_length]
 
 
 def calculate_trajectory(n=13, res=100, plot_graph=False):
@@ -204,9 +205,23 @@ def calculate_trajectory(n=13, res=100, plot_graph=False):
     v_t = sci.integrate.solve_ivp(calculate_dynamics, (0, n), v_0, t_eval=t_points)
 
     if plot_graph:
-        plt.plot(v_t.y[3], v_t.y[5])
-        plt.grid()
-        plt.xlim(0, 300)
-        plt.ylim(0,300)
+        data = analize_flight(v_t.y, n)
+        plt.close()
+
+        fig, axs = plt.subplots(1, 2, figsize=(12,4))
+        axs[0].plot(v_t.y[3], v_t.y[5], "g")
+        axs[0].set_xlabel(f"dolžina leta {data[0]}m")
+        axs[0].set_ylabel(f"višina leta {data[2]}m")
+        axs[0].set_xlim(0, data[0] + 20)
+        axs[0].set_ylim(0, data[2] + 20)
+
+        axs[1].plot(v_t.y[3], v_t.y[4], "r")
+        axs[1].set_xlabel(f"dolžina leta {data[0]}m")
+        axs[1].set_ylabel(f"zavoj leta {data[1]}m")
+        axs[1].set_xlim(0, data[0])
+        axs[1].set_ylim(-data[1] - 20, data[1] + 20)
+
+        plt.show()
+        
     else:
         return v_t.y
