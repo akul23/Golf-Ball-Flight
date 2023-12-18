@@ -6,9 +6,9 @@ description_width = "200px"  # Label width
 
 #############ENVIRONMENT WIDGETS##############
 wind_slider = IntSlider(
-    value=0,
+    value=5,
     min=0,
-    max=20,
+    max=10,
     step=1,
     description="Hitrost vetra [m/s]",
     readout=True,
@@ -16,7 +16,7 @@ wind_slider = IntSlider(
     layout=Layout(width=width),
 )
 wind_direction_slider = IntSlider(
-    value=0,
+    value=90,
     min=0,
     max=360,
     step=1,
@@ -76,8 +76,8 @@ launch_angle_slider = FloatSlider(
 )
 spin_x_slider = IntSlider(
     value=0,
-    min=-400,
-    max=400,
+    min=-100,
+    max=100,
     step=1,
     description="Vrtljaji okoli x osi [RPM]",
     readout=True,
@@ -86,8 +86,8 @@ spin_x_slider = IntSlider(
 )
 spin_y_slider = IntSlider(
     value=-200,
-    min=-200,
-    max=200,
+    min=-300,
+    max=300,
     step=1,
     description="Vrtljaji okoli y osi [RPM]",
     readout=True,
@@ -96,8 +96,8 @@ spin_y_slider = IntSlider(
 )
 spin_z_slider = IntSlider(
     value=0,
-    min=-200,
-    max=200,
+    min=-100,
+    max=100,
     step=1,
     description="Vrtljaji okoli z osi [RPM]",
     readout=True,

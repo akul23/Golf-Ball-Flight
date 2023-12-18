@@ -177,31 +177,12 @@ def analize_flight(flight_data, n):
 
     flight_time = sci.optimize.newton(t_z, 10)
 
-    x_distance = t_x(flight_time)
-    y_distance = t_y(flight_time)
-    apex = np.max(flight_data[5])
-    flight_path_length = path_length(flight_data[:3], n, int(np.ceil(flight_time)))
+    x_distance = np.round(t_x(flight_time), 2)
+    y_distance = np.round(t_y(flight_time), 2)
+    apex = np.round(np.max(flight_data[5]), 2)
+    flight_path_length = np.round(path_length(flight_data[:3], n, int(np.ceil(flight_time))), 2)
 
-    #print(x_distance, y_distance, apex, flight_path_length)
-
-    # TODO optimize root search, newton method
-    # z_0 = sci.optimize.bisect(flight_x_z, 1, flight_data[3][-1])  # X of touchdown
-
-    # curve = flight_x_y(z_0)  # Curve amplitude
-
-    # z_max = sci.ndimage.maximum(flight_data[5])  # Maximum of flight
-
-    # Flight time
-    # length_s = np.shape(flight_data[3])[0] / n  # Datapoints per second
-    # closest_value = min(
-    #    flight_data[3], key=lambda x: abs(z_0 - x)
-    # )  # Find the closest x value in array to touchdown
-    # closest_value_index = np.where(
-    #    closest_value == flight_data[3]
-    # )  # Find the index of the closest value
-    # f_time = closest_value_index[0][0] / length_s  # Time till touchdown aka flight time
-
-    return t_z
+    return x_distance, y_distance, apex, flight_path_length
 
 
 def calculate_trajectory(n=13, res=100, plot_graph=False):
