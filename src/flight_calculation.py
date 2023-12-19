@@ -31,14 +31,14 @@ def define_constants():
     d = ball.ball_properties.get("diameter")  # Ball diameter
     wind = environment.prepare_wind_vector()  # Wind vector
 
-    if UI.user_interface(get_value=True)[0]:  # Check for use of preset
-        w = -ball.get_club_data(UI.user_interface(get_value=True)[1])[
+    if UI.toggle.value:  # Check for use of preset
+        w = -ball.get_club_data(UI.club_dropdown.value)[
             :3
         ]  # Spin rate in rad/s
     else:
-        w = UI.user_interface(get_value=True)[5:8]  # Spin rate in rad/s
+        w = [UI.spin_x_slider.value, UI.spin_y_slider.value, UI.spin_z_slider.value] # Spin rate in rad/s
 
-    c_d_function = ball.c_d_re_interpolation(UI.user_interface(get_value=True)[2])
+    c_d_function = ball.c_d_re_interpolation(UI.ball_dropdown.value)
 
     m_e = magnus_equation()  # Defines numerical magnus function
 
@@ -219,7 +219,7 @@ def calculate_trajectory(n=13, res=100, plot_graph=False):
         axs[1].set_xlabel(f"dolžina leta {data[0]}m")
         axs[1].set_ylabel(f"zavoj leta {data[1]}m")
         axs[1].set_xlim(0, data[0])
-        axs[1].set_ylim(-data[1] - 20, data[1] + 20)
+        axs[1].set_ylim(-data[1]-1, data[1]+1)
 
         plt.show()
 

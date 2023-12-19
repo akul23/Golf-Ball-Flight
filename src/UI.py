@@ -11,8 +11,8 @@ from ipywidgets import (
 from IPython.display import display
 from . import flight_calculation
 
-width = "300px"  # Slider width
-description_width = "100px"  # Label width
+width = "330px"  # Slider width
+description_width = "150px"  # Label width
 
 # WIDGETS
 wind_slider = IntSlider(
@@ -144,71 +144,6 @@ city_dropdown = Dropdown(
     disabled=True,
 )
 # \WIDGETS
-
-
-def user_interface(get_value=False):
-    """
-    User interface for club/ball data
-
-    Keyword arguments:
-    get_data -- return data or display UI (default False)
-    """
-
-    # Calls custom_preset(toggle.value) when value changes
-
-    # Only returns values of the selected menu (preset/custom), first element is for identifying which menu the function returns
-
-    preset = VBox(
-        children=[
-            toggle,
-            club_dropdown,
-            ball_dropdown,
-        ]
-    )  # VBox for the preset option
-    weather_box = VBox(
-        [
-            local_weather,
-            temparature_slider,
-            pressure_slider,
-            wind_slider,
-            wind_direction_slider,
-        ]
-    )
-
-    if get_value:
-        return [
-            toggle.value,
-            club_dropdown.value,
-            ball_dropdown.value,
-            club_speed_slider.value,
-            launch_angle_slider.value,
-            spin_x_slider.value,
-            spin_y_slider.value,
-            spin_z_slider.value,
-            wind_slider.value,
-            wind_direction_slider.value,
-            temparature_slider.value,
-            pressure_slider.value,
-            local_weather,
-        ]
-    # displays VBox and preset/custom checkbox
-
-    else:
-        return (
-            toggle,
-            club_dropdown,
-            ball_dropdown,
-            club_speed_slider,
-            launch_angle_slider,
-            spin_x_slider,
-            spin_y_slider,
-            spin_z_slider,
-            temparature_slider,
-            pressure_slider,
-            wind_slider,
-            wind_direction_slider,
-            local_weather,
-        )
 
 
 def live_plot():

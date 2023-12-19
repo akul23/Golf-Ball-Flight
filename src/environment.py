@@ -31,10 +31,10 @@ def get_local_weather_data(loc="Ljubljana"):
 
 def calculate_viscosity():
     """Calculates viscosity for custum UI values"""
-    if UI.user_interface(get_value=True)[12].value:
+    if UI.local_weather.value:
         data = get_local_weather_data()[0]
     else:
-        data = UI.user_interface(get_value=True)[10]  # Calls UI values
+        data = UI.temparature_slider.value  # Calls UI values
     temp = data + T_0  # Extracts temperature value and converts to Kelvin
     viscosity = (  # Sutherlands formula, inaccurate at low pressures
         u_0 * (temp / T_0) ** 1.5 * ((0.555 * T_0 + Suther) / (0.555 * temp + Suther))
@@ -47,7 +47,10 @@ def calculate_density():
     if UI.user_interface(get_value=True)[12].value:
         data = get_local_weather_data()[:2]
     else:
-        data = UI.user_interface(get_value=True)[10:12]  # Calls UI values
+        data = [
+            UI.temparature_slider.value,
+            UI.pressure_slider.value,
+        ]  # Calls UI values
     temp = data[0] + T_0  # Extracts temperature value and converts to Kelvin
     pressure = data[1] * 100000  # Extracts pressure value and converts to Pa
 
@@ -59,10 +62,10 @@ def prepare_wind_vector():
     Returns vector in form [x_wind_velocity, y_wind_velocity, 0]
     """
 
-    if UI.user_interface(get_value=True)[12].value:
+    if UI.local_weather.value:
         a = get_local_weather_data()[2:]
     else:
-        a = UI.user_interface(get_value=True)[8:10]  # Calls UI values
+        a = [UI.wind_slider.value, UI.wind_direction_slider.value]  # Calls UI values
     return np.round(
         [a[0] * np.cos(np.radians(a[1])), a[0] * np.sin(np.radians(a[1])), 0], 2
     )
