@@ -11,8 +11,8 @@ from ipywidgets import (
 from IPython.display import display
 from . import flight_calculation
 
-width = "400px"  # Slider width
-description_width = "200px"  # Label width
+width = "300px"  # Slider width
+description_width = "100px"  # Label width
 
 # WIDGETS
 wind_slider = IntSlider(
@@ -129,6 +129,20 @@ spin_z_slider = IntSlider(
 toggle = Checkbox(
     value=True, description="Uporabi Pre-set parametre"
 )  # Checkbox for preset hide/show
+local_weather = Checkbox(
+    value=False, description="Uporabi lokalno vreme"
+)  # Checkbox for preset hide/show
+city_dropdown = Dropdown(
+    options=[
+        "Ljubljana",
+        "London",
+        "New York",
+        "Paris",
+        "Madrid",
+        "Tokyo",
+    ],
+    disabled=True,
+)
 # \WIDGETS
 
 
@@ -149,12 +163,17 @@ def user_interface(get_value=False):
             toggle,
             club_dropdown,
             ball_dropdown,
+        ]
+    )  # VBox for the preset option
+    weather_box = VBox(
+        [
+            local_weather,
             temparature_slider,
             pressure_slider,
             wind_slider,
             wind_direction_slider,
         ]
-    )  # VBox for the preset option
+    )
 
     if get_value:
         return [
@@ -170,6 +189,7 @@ def user_interface(get_value=False):
             wind_direction_slider.value,
             temparature_slider.value,
             pressure_slider.value,
+            local_weather,
         ]
     # displays VBox and preset/custom checkbox
 
@@ -187,16 +207,18 @@ def user_interface(get_value=False):
             pressure_slider,
             wind_slider,
             wind_direction_slider,
+            local_weather,
         )
 
 
 def live_plot():
-  
     sliders = VBox(
         [
             toggle,
             club_dropdown,
             ball_dropdown,
+            local_weather,
+            city_dropdown,
             temparature_slider,
             pressure_slider,
             wind_slider,
@@ -214,6 +236,8 @@ def live_plot():
                 toggle,
                 club_dropdown,
                 ball_dropdown,
+                local_weather,
+                city_dropdown,
                 temparature_slider,
                 pressure_slider,
                 wind_slider,
@@ -228,13 +252,30 @@ def live_plot():
                 spin_x_slider,
                 spin_y_slider,
                 spin_z_slider,
+                local_weather,
+                city_dropdown,
                 temparature_slider,
                 pressure_slider,
                 wind_slider,
                 wind_direction_slider,
             ]
 
+    def loc_weather(x):
+        if x.get("new"):
+            city_dropdown.disabled = False
+            temparature_slider.disabled = True
+            pressure_slider.disabled = True
+            wind_slider.disabled = True
+            wind_direction_slider.disabled = True
+        else:
+            city_dropdown.disabled = True
+            temparature_slider.disabled = False
+            pressure_slider.disabled = False
+            wind_slider.disabled = False
+            wind_direction_slider.disabled = False
+
     toggle.observe(custom_preset, names="value")
+    local_weather.observe(loc_weather, names="value")
 
     graph_output = interactive_output(
         update_graph,
@@ -251,6 +292,8 @@ def live_plot():
             "wind_direction": wind_direction_slider,
             "temperature": temparature_slider,
             "pressure": pressure_slider,
+            "local_weather": local_weather,
+            "city_dropdown": city_dropdown,
         },
     )
 

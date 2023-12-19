@@ -38,9 +38,7 @@ def define_constants():
     else:
         w = UI.user_interface(get_value=True)[5:8]  # Spin rate in rad/s
 
-    c_d_function = ball.c_d_re_interpolation(
-        UI.user_interface(get_value=True)[2]
-    )
+    c_d_function = ball.c_d_re_interpolation(UI.user_interface(get_value=True)[2])
 
     m_e = magnus_equation()  # Defines numerical magnus function
 
@@ -85,8 +83,7 @@ def calculate_drag_force(velocity):
     """
     Re = calculate_reynolds(velocity)  # Caluclates reynolds number
     C_d = np.round(c_d_function(Re), 2)  # Gets corresponding drag coefficient
-    i = np.sign(velocity)  # Sign mask to reverse drag force when falling
-
+    i = np.sign(velocity)
     return np.round(-0.5 * C_d * rho * A * velocity**2 * i, 2)
 
 
@@ -106,9 +103,10 @@ def calculate_magnus_force(velocity):
     Keyword arguments:
     velocity -- velocity vector at which the ball is travelling, list.shape(3,1)
     """
-    slip_factor=1
-    return np.round(np.ravel(m_e(velocity[0], velocity[1], velocity[2]) * slip_factor), 2)
-
+    slip_factor = 1
+    return np.round(
+        np.ravel(m_e(velocity[0], velocity[1], velocity[2]) * slip_factor), 2
+    )
 
 
 def calculate_dynamics(t, v):
@@ -181,9 +179,11 @@ def analize_flight(flight_data, n):
     x_distance = np.round(t_x(flight_time), 2)
     y_distance = np.round(t_y(flight_time), 2)
     apex = np.round(np.max(flight_data[5]), 2)
-    flight_path_length = np.round(path_length(flight_data[:3], n, int(np.ceil(flight_time))), 2)
+    flight_path_length = np.round(
+        path_length(flight_data[:3], n, int(np.ceil(flight_time))), 2
+    )
 
-    return [x_distance, y_distance, apex, flight_path_length]
+    return [x_distance, y_distance, apex, flight_path_length, flight_time]
 
 
 def calculate_trajectory(n=13, res=100, plot_graph=False):
@@ -208,7 +208,7 @@ def calculate_trajectory(n=13, res=100, plot_graph=False):
         data = analize_flight(v_t.y, n)
         plt.close()
 
-        fig, axs = plt.subplots(1, 2, figsize=(12,4))
+        fig, axs = plt.subplots(1, 2, figsize=(12, 4))
         axs[0].plot(v_t.y[3], v_t.y[5], "g")
         axs[0].set_xlabel(f"dolžina leta {data[0]}m")
         axs[0].set_ylabel(f"višina leta {data[2]}m")
@@ -222,6 +222,6 @@ def calculate_trajectory(n=13, res=100, plot_graph=False):
         axs[1].set_ylim(-data[1] - 20, data[1] + 20)
 
         plt.show()
-        
+
     else:
         return v_t.y
