@@ -44,7 +44,7 @@ def calculate_viscosity():
 
 def calculate_density():
     """Calculates density for UI values"""
-    if UI.user_interface(get_value=True)[12].value:
+    if UI.local_weather.value:
         data = get_local_weather_data()[:2]
     else:
         data = [
