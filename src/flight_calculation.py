@@ -1,7 +1,8 @@
 # Module imports
 import numpy as np
 import sympy as sym
-import scipy as sci
+from scipy import interpolate, optimize, integrate
+
 import matplotlib.pyplot as plt
 
 # Script imports
@@ -140,14 +141,15 @@ def create_coord_functions(data, n):
         n (int): end time value
 
     Returns:
-        SciPy function: x, y ,z
+        
+        Py function: x, y ,z
     """
     t_points = len(data[0])
     t_int = np.linspace(0, n, t_points)
 
-    t_x = sci.interpolate.interp1d(t_int, data[0])
-    t_y = sci.interpolate.interp1d(t_int, data[1])
-    t_z = sci.interpolate.interp1d(t_int, data[2])
+    t_x = interpolate.interp1d(t_int, data[0])
+    t_y = interpolate.interp1d(t_int, data[1])
+    t_z = interpolate.interp1d(t_int, data[2])
 
     return t_x, t_y, t_z
 
@@ -158,7 +160,7 @@ def path_length(data, n, t_d):
     t_int = np.linspace(0, t_d, t)
     mag = (v_x(t_int) ** 2 + v_y(t_int) ** 2 + v_z(t_int) ** 2) ** 0.5
 
-    return sci.integrate.simpson(mag, t_int, even="avg")
+    return integrate.simpson(mag, t_int, even="avg")
 
 
 def analize_flight(flight_data, n):
@@ -174,7 +176,10 @@ def analize_flight(flight_data, n):
 
     t_x, t_y, t_z = create_coord_functions(flight_data[3:], n)
 
-    flight_time = sci.optimize.newton(t_z, 10)
+    try:
+        flight_time = optimize.newton(t_z, n - 1)
+    except:
+        raise("Check observation range, does the ball reach the ground?")
 
     x_distance = np.round(t_x(flight_time), 2)
     y_distance = np.round(t_y(flight_time), 2)
@@ -186,7 +191,7 @@ def analize_flight(flight_data, n):
     return [x_distance, y_distance, apex, flight_path_length, flight_time]
 
 
-def calculate_trajectory(n=13, res=100, plot_graph=False):
+def calculate_trajectory(n=13, res=50, plot_graph=False):
     """Calculate ball flight trajectory
 
     Args:
@@ -200,9 +205,9 @@ def calculate_trajectory(n=13, res=100, plot_graph=False):
     define_constants()  # Prepare constants for specific flight
     v_0 = np.zeros(6)
     v_0[:3] = ball.prepare_ball_initial_velocity_vector()
-    t_points = np.linspace(0, n, 8 * res)
+    t_points = np.linspace(0, n, n * res)
 
-    v_t = sci.integrate.solve_ivp(calculate_dynamics, (0, n), v_0, t_eval=t_points)
+    v_t = integrate.solve_ivp(calculate_dynamics, (0, n), v_0, t_eval=t_points)
 
     if plot_graph:
         data = analize_flight(v_t.y, n)

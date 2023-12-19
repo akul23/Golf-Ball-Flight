@@ -1,7 +1,7 @@
 # Module import
 import numpy as np
 import pandas as pd
-import scipy as sci
+from scipy import interpolate
 import os
 
 # Script imports
@@ -60,7 +60,7 @@ def c_d_re_interpolation(ball_type="generic"):
     c_d_data = data[:, 1]
 
     # Interpolation
-    spline = sci.interpolate.InterpolatedUnivariateSpline(
+    spline = interpolate.InterpolatedUnivariateSpline(
         re_data, c_d_data
     )  
 
@@ -71,7 +71,8 @@ def prepare_ball_initial_velocity_vector():
     """
     Returns initial_velocity vector of ball given the launch angle, assuming no sideway (y) velocity
     """
-    if UI.toggle: # Check for use of preset
+    if UI.toggle.value: # Check for use of preset  
+       
         data = get_club_data(UI.club_dropdown.value)[3:5] # [abs_velocity, launch angle], from club data
         return np.round(
                 np.array(
@@ -84,7 +85,7 @@ def prepare_ball_initial_velocity_vector():
                 2,
             )
     else:
-        data = [UI.club_speed_slider, UI.launch_angle_slider] # [abs_velocity, launch angle], from custom value user interface
+        data = [UI.club_speed_slider.value, UI.launch_angle_slider.value] # [abs_velocity, launch angle], from custom value user interface
         return np.round(
             np.array(
                 [
