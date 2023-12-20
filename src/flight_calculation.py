@@ -2,7 +2,6 @@
 import numpy as np
 import sympy as sym
 from scipy import interpolate, optimize, integrate
-
 import matplotlib.pyplot as plt
 
 # Script imports
@@ -191,7 +190,7 @@ def analize_flight(flight_data, n):
     return [x_distance, y_distance, apex, flight_path_length, flight_time, t_point_z_0]
 
 
-def calculate_trajectory(n=13, res=50, plot_graph=False):
+def calculate_trajectory(n=15, res=50, plot_graph=False):
     """Calculate ball flight trajectory
 
     Args:
@@ -211,7 +210,6 @@ def calculate_trajectory(n=13, res=50, plot_graph=False):
 
     if plot_graph:
         data = analize_flight(v_t.y, n)
-        plt.close()
 
         fig, axs = plt.subplots(1, 2, figsize=(12, 4))
         axs[0].plot(v_t.y[3], v_t.y[5], "g")
@@ -226,7 +224,7 @@ def calculate_trajectory(n=13, res=50, plot_graph=False):
         axs[1].set_xlim(0, data[0])
         axs[1].set_ylim(-data[1]-1, data[1]+1)
 
-        plt.show()
+        
 
     else:
         return v_t.y
