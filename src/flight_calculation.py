@@ -133,7 +133,7 @@ def calculate_dynamics(t, v):
     return out
 
 
-def create_coord_functions(data, n):
+def create_coord_functions(data, n, t):
     """Creates interpolated functions of x, y and z coordinates with respect to time
 
     Args:
@@ -144,8 +144,7 @@ def create_coord_functions(data, n):
         
         Py function: x, y ,z
     """
-    t_points = len(data[0])
-    t_int = np.linspace(0, n, t_points)
+    t_int = np.linspace(0, n, t)
 
     t_x = interpolate.interp1d(t_int, data[0])
     t_y = interpolate.interp1d(t_int, data[1])
@@ -154,9 +153,8 @@ def create_coord_functions(data, n):
     return t_x, t_y, t_z
 
 
-def path_length(data, n, t_d):
-    v_x, v_y, v_z = create_coord_functions(data, n)
-    t = len(data[0])
+def path_length(data, n, t_d, t):
+    v_x, v_y, v_z = create_coord_functions(data, n, t)
     t_int = np.linspace(0, t_d, t)
     mag = (v_x(t_int) ** 2 + v_y(t_int) ** 2 + v_z(t_int) ** 2) ** 0.5
 
@@ -173,8 +171,9 @@ def analize_flight(flight_data, n):
     Returns:
         _type_: _description_
     """
+    t = len(flight_data[0])
 
-    t_x, t_y, t_z = create_coord_functions(flight_data[3:], n)
+    t_x, t_y, t_z = create_coord_functions(flight_data[3:], n, t)
 
     try:
         flight_time = optimize.newton(t_z, n - 1)
@@ -185,10 +184,11 @@ def analize_flight(flight_data, n):
     y_distance = np.round(t_y(flight_time), 2)
     apex = np.round(np.max(flight_data[5]), 2)
     flight_path_length = np.round(
-        path_length(flight_data[:3], n, int(np.ceil(flight_time))), 2
+        path_length(flight_data[:3], n, int(np.ceil(flight_time)), t), 2
     )
+    t_point_z_0 = np.abs(flight_data[3] - x_distance).argmin()
 
-    return [x_distance, y_distance, apex, flight_path_length, flight_time]
+    return [x_distance, y_distance, apex, flight_path_length, flight_time, t_point_z_0]
 
 
 def calculate_trajectory(n=13, res=50, plot_graph=False):
