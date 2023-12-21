@@ -11,14 +11,22 @@ Suther = 120  # Sutherland's constant
 u_0 = 0.01724  # Reference viscosity
 T_0 = 273.15  # Referenčna temperature
 R = 287  # Specific gas constant for air
-api_key = "40d40b0b15d847bc93783410231912"
+api_key = "40d40b0b15d847bc93783410231912"  # Weather api key
 
 
 def get_local_weather_data(loc="Ljubljana"):
-    loc = UI.city_dropdown.value
-    data = json.loads(
+    """Access to free weather api, for current weather at location
+
+    Args:
+        loc (str, optional): City name or coordinates. Defaults to "Ljubljana".
+
+    Returns:
+        list: in form [T[°C], p[mBar], wind_speed[km/h], wind_degree[°]]
+    """
+    loc = UI.city_dropdown.value  # Get selected location
+    data = json.loads(  # Load request in json
         requests.get(
-            f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={loc}&aqi=no"
+            f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={loc}&aqi=no"  # Api request
         ).text
     )
     return [
@@ -30,7 +38,11 @@ def get_local_weather_data(loc="Ljubljana"):
 
 
 def calculate_viscosity():
-    """Calculates viscosity for custum UI values"""
+    """Calculates viscosity for custum UI values
+
+    Returns:
+        float: viscosity in Pas
+    """
     if UI.local_weather.value:
         data = get_local_weather_data()[0]
     else:
@@ -43,9 +55,13 @@ def calculate_viscosity():
 
 
 def calculate_density():
-    """Calculates density for UI values"""
-    if UI.local_weather.value:
-        data = get_local_weather_data()[:2]
+    """Calculates density for UI values
+
+    Returns:
+        pressure: in Pa
+    """
+    if UI.local_weather.value:  # Check for loacl weather setting
+        data = get_local_weather_data()[:2]  # Get local weather
     else:
         data = [
             UI.temparature_slider.value,
@@ -58,8 +74,10 @@ def calculate_density():
 
 
 def prepare_wind_vector():
-    """
-    Returns vector in form [x_wind_velocity, y_wind_velocity, 0]
+    """Prepares wind vector based on UI selected parameters, assuming no air movement in z direction
+
+    Returns:
+        list: in form [v_x, v_y, 0]
     """
 
     if UI.local_weather.value:

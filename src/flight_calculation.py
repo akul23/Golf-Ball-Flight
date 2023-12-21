@@ -9,8 +9,7 @@ from . import ball, environment, UI
 
 
 def define_constants():
-    """
-    Defines constants used by functions in this script, requires access to environment.py, ball.py and UI.py
+    """Defines constants used by functions in this script, requires access to environment.py, ball.py and UI.py
     """
     global A
     global rho
@@ -44,8 +43,10 @@ def define_constants():
 
 
 def magnus_equation():
-    """
-    Prepares the numerial function for magnus force calculation
+    """Prepares the numerial function for magnus force calculation
+
+    Returns:
+        np.func: numerical function for magnus force
     """
     # Define symbols
     rho_s, r_s, r_1_s = sym.symbols("rho, r r_1", positive=True)
@@ -64,22 +65,25 @@ def magnus_equation():
 
 
 def calculate_reynolds(velocity):
-    """
-    Calculates reynolds number at given viscosity
+    """Calculates reynolds number at given viscosity
 
-    Keyword arguments:
-    velocity -- velocity vector at which the ball is travelling, list.shape(3,1)
+    Args:
+        velocity (list): in form [v_x, v_y, v_z]
+
+    Returns:
+        list: in form [Re_x, Re_y, Re_z]
     """
     return np.round(rho * np.abs(velocity) * d / mu)
 
 
 def calculate_drag_force(velocity):
-    """
-    Calculates drag force of the ball at given velocity with the given drag coefficient function
+    """Calculates drag force of the ball at given velocity with the given drag coefficient function
 
-    Keyword arguments:
-    velocity -- velocity vector at which the ball is travelling, list.shape(3,1)
-    c_d_function -- drag coefficient function, func
+    Args:
+        velocity (list): in form [v_x, v_y, v_z]
+
+    Returns:
+        list: in form [F_x, F_y, F_z]
     """
     Re = calculate_reynolds(velocity)  # Caluclates reynolds number
     C_d = np.round(c_d_function(Re), 2)  # Gets corresponding drag coefficient
@@ -88,8 +92,10 @@ def calculate_drag_force(velocity):
 
 
 def calculate_wind_force():
-    """
-    Calculates force wind applys to ball
+    """    Calculates force wind applys to ball
+
+    Returns:
+        list: in form [F_x, F_y, F_z]
     """
     mask = np.sign(wind)  # Sign mask, sign gets lost due to squaring
 
@@ -97,26 +103,29 @@ def calculate_wind_force():
 
 
 def calculate_magnus_force(velocity):
-    """
-    Calculates the magnus force
+    """Calculates the magnus force
 
-    Keyword arguments:
-    velocity -- velocity vector at which the ball is travelling, list.shape(3,1)
+    Args:
+        velocity (list): in form [v_x, v_y, v_z]
+
+    Returns:
+        list: in form [F_x, F_y, F_z]
     """
-    slip_factor = 1
+    slip_factor = 1 # Slip factor, 1 -> not used
     return np.round(
         np.ravel(m_e(velocity[0], velocity[1], velocity[2]) * slip_factor), 2
     )
 
 
 def calculate_dynamics(t, v):
-    """
-    Calculate ball flight dynamics, returns [:3] velocity at each time point, [3:] location at each time point
+    """Calculate ball flight dynamics
 
-    Keyword arguments:
-    v -- velocity at given time, list.shape(3,1)
-    t -- time points, list.shape(0,n)
-    c_d_function -- drag coefficient function, func
+    Args:
+        t (tuple): in form (t_min, t_max), observation range
+        v (list): in form [v_x, v_y, v_z, x, y, z]
+
+    Returns:
+        list: [v_x, v_y, v_z, x, y, z]
     """
     v = v[:3]  # Extract velocity slice
 
@@ -136,12 +145,12 @@ def create_coord_functions(data, n, t):
     """Creates interpolated functions of x, y and z coordinates with respect to time
 
     Args:
-        data (list, shape(3, x)): an array of coordinate values for each time point
-        n (int): end time value
+        data (list): flight data as returned by "calculate trajectory"
+        n (int): size of observation range
+        t (int): amount of time points
 
     Returns:
-        
-        Py function: x, y ,z
+        tuple: tuple of functions in form (t_x, t_y, t_z)
     """
     t_int = np.linspace(0, n, t)
 
@@ -153,6 +162,17 @@ def create_coord_functions(data, n, t):
 
 
 def path_length(data, n, t_d, t):
+    """Calculates path length of balls arc
+
+    Args:
+        data (list): flight data as returned by "calculate trajectory"
+        n (int): size of observation range
+        t_d (float): 
+        t (int): amount of time points
+
+    Returns:
+        _type_: _description_
+    """
     v_x, v_y, v_z = create_coord_functions(data, n, t)
     t_int = np.linspace(0, t_d, t)
     mag = (v_x(t_int) ** 2 + v_y(t_int) ** 2 + v_z(t_int) ** 2) ** 0.5
