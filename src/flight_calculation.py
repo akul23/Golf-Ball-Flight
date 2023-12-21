@@ -9,8 +9,7 @@ from . import ball, environment, UI
 
 
 def define_constants():
-    """Defines constants used by functions in this script, requires access to environment.py, ball.py and UI.py
-    """
+    """Defines constants used by functions in this script, requires access to environment.py, ball.py and UI.py"""
     global A
     global rho
     global mu
@@ -31,11 +30,13 @@ def define_constants():
     wind = environment.prepare_wind_vector()  # Wind vector
 
     if UI.toggle.value:  # Check for use of preset
-        w = -ball.get_club_data(UI.club_dropdown.value)[
-            :3
-        ]  # Spin rate in rad/s
+        w = -ball.get_club_data(UI.club_dropdown.value)[:3]  # Spin rate in rad/s
     else:
-        w = [UI.spin_x_slider.value, UI.spin_y_slider.value, UI.spin_z_slider.value] # Spin rate in rad/s
+        w = [
+            UI.spin_x_slider.value,
+            UI.spin_y_slider.value,
+            UI.spin_z_slider.value,
+        ]  # Spin rate in rad/s
 
     c_d_function = ball.c_d_re_interpolation(UI.ball_dropdown.value)
 
@@ -92,7 +93,7 @@ def calculate_drag_force(velocity):
 
 
 def calculate_wind_force():
-    """    Calculates force wind applys to ball
+    """Calculates force wind applys to ball
 
     Returns:
         list: in form [F_x, F_y, F_z]
@@ -111,7 +112,7 @@ def calculate_magnus_force(velocity):
     Returns:
         list: in form [F_x, F_y, F_z]
     """
-    slip_factor = 1 # Slip factor, 1 -> not used
+    slip_factor = 1  # Slip factor, 1 -> not used
     return np.round(
         np.ravel(m_e(velocity[0], velocity[1], velocity[2]) * slip_factor), 2
     )
@@ -167,7 +168,7 @@ def path_length(data, n, t_d, t):
     Args:
         data (list): flight data as returned by "calculate trajectory"
         n (int): size of observation range
-        t_d (float): 
+        t_d (int): time of flight
         t (int): amount of time points
 
     Returns:
@@ -184,11 +185,11 @@ def analize_flight(flight_data, n):
     """Analizes flight and returns flight details in form [x_distance, max_height, flight_time, curve distance]
 
     Args:
-        flight_data (list, shape(6, x)): x, y, z velocity and position values
-        n (int): end time value
+        flight_data (list): flight data as returned by "calculate trajectory"
+        n (int): end of observation interval
 
     Returns:
-        _type_: _description_
+        list: in form [x_distance, y_distance, apex, flight_path_length, flight_time, t_point_z_0]
     """
     t = len(flight_data[0])
 
@@ -197,7 +198,7 @@ def analize_flight(flight_data, n):
     try:
         flight_time = optimize.newton(t_z, n - 1)
     except:
-        raise("Check observation range, does the ball reach the ground?")
+        raise ("Check observation range, does the ball reach the ground?")
 
     x_distance = np.round(t_x(flight_time), 2)
     y_distance = np.round(t_y(flight_time), 2)
@@ -214,8 +215,8 @@ def calculate_trajectory(n=15, res=50, plot_graph=False):
     """Calculate ball flight trajectory
 
     Args:
-        n (int, optional):time interval for which to solve. Defaults to 13.
-        res (int, optional): time points per second. Defaults to 100.
+        n (int, optional):time interval for which to solve. Defaults to 15.
+        res (int, optional): time points per second. Defaults to 50.
         plot_graph (bool, optional): plot position graph insted of return values. Defaults to False.
 
     Returns:
@@ -242,9 +243,6 @@ def calculate_trajectory(n=15, res=50, plot_graph=False):
         axs[1].set_xlabel(f"dolžina leta {data[0]}m")
         axs[1].set_ylabel(f"zavoj leta {data[1]}m")
         axs[1].set_xlim(0, data[0])
-        axs[1].set_ylim(-data[1]-1, data[1]+1)
-
-        
-
+        axs[1].set_ylim(-data[1] - 1, data[1] + 1)
     else:
         return v_t.y

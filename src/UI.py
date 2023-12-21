@@ -1,3 +1,4 @@
+# Module imports
 from ipywidgets import (
     Checkbox,
     VBox,
@@ -9,6 +10,8 @@ from ipywidgets import (
     HBox,
 )
 from IPython.display import display
+
+# Script imports
 from . import flight_calculation
 
 width = "330px"  # Slider width
@@ -147,6 +150,7 @@ city_dropdown = Dropdown(
 
 
 def live_plot():
+    """displays UI with live plot updates"""
     sliders = VBox(
         [
             toggle,
@@ -162,6 +166,7 @@ def live_plot():
     )
 
     def update_graph(**args):
+        """Calls flight calculations with plots enabled"""
         flight_calculation.calculate_trajectory(plot_graph=True)
 
     def custom_preset(x):
@@ -196,6 +201,11 @@ def live_plot():
             ]
 
     def loc_weather(x):
+        """Enables / disables weather options
+
+        Args:
+            x (dict): Checkbox new value
+        """
         if x.get("new"):
             city_dropdown.disabled = False
             temparature_slider.disabled = True
@@ -209,9 +219,11 @@ def live_plot():
             wind_slider.disabled = False
             wind_direction_slider.disabled = False
 
+    # Observe for changes
     toggle.observe(custom_preset, names="value")
     local_weather.observe(loc_weather, names="value")
 
+    # Interactive widgets
     graph_output = interactive_output(
         update_graph,
         {
@@ -234,4 +246,4 @@ def live_plot():
 
     inputs = VBox([sliders])
     x_z_plot = VBox([graph_output])
-    display(HBox([inputs, x_z_plot]))
+    display(HBox([inputs, x_z_plot]))  # Display plots and UI side by side
