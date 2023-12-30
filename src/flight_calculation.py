@@ -57,7 +57,7 @@ def magnus_equation():
     A_1 = sym.pi * r_1_s**2
     A_k = sym.pi * r_s**2 - A_1
     r_1 = sym.solve(sym.Eq(A_1, A_k), r_1_s, positive=True)
-    F = 2 * rho * r_1[0] ** 2 * r_s * sym.pi * w_s.cross(v)
+    F =  rho * r_1[0] ** 2 * r_s * sym.pi * w_s.cross(v)
     # Insert flight constants
     F = F.subs({w_s[0]: w[0], w_s[1]: w[1], w_s[2]: w[2], rho_s: rho, r_s: d / 2})
     return sym.lambdify(
