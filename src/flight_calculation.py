@@ -172,7 +172,7 @@ def path_length(data, n, t_d, t):
         t (int): amount of time points
 
     Returns:
-        _type_: _description_
+        int: path length value in m
     """
     v_x, v_y, v_z = create_coord_functions(data, n, t)
     t_int = np.linspace(0, t_d, t)
